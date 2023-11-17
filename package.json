@@ -1,0 +1,22 @@
+{
+  "name": "drake",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/vision": "^4.0.2",
+    "chokidar": "^3.5.3",
+    "lodash": "^4.17.21",
+    "node-notifier": "^10.0.1",
+    "nodemon": "^3.0.1",
+    "openai": "^4.19.0",
+    "sharp": "^0.32.6"
+  }
+}
