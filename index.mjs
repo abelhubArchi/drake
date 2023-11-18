@@ -4,6 +4,7 @@ import fs from 'fs';
 import _ from 'lodash';
 import notifier from 'node-notifier';
 import OpenAI from 'openai';
+import sharp from 'sharp';
 import credentials from './key.json' assert { type: 'json' };
 
 
@@ -45,16 +46,26 @@ watcher.on('add', async (ruta) => {
   console.log(`Archivo detectado: ${ruta}`);
   
   // Puedes agregar lógica adicional aquí para verificar si el archivo es una captura de pantalla u otro tipo de imagen
-  
   // Lee el contenido del archivo
-  fs.readFile(ruta, async (err, data) => {
-    if (err) {
-      console.error(`Error al leer el archivo: ${err}`);
-      return;
-    }
-    var img = await client.textDetection(data);
-    var textoDeImagen = img[0].textAnnotations[0].description;
-    //console.log(textoDeImagen);
+fs.readFile(ruta, async (err, data) => {
+  if (err) {
+    console.error(`Error al leer el archivo: ${err}`);
+    return;
+  }
+
+  // Realizar el recorte en la parte superior (300px) utilizando Sharp
+  const imagenOriginal = sharp(data);
+  const metadata = await imagenOriginal.metadata();
+  const imagenRecortada = await imagenOriginal.extract({
+    top: 210,
+    left: 0,
+    width: metadata.width,
+    height: metadata.height - 210,
+  });
+
+  // Realizar la detección de texto en la imagen recortada
+  const img = await client.textDetection(await imagenRecortada.toBuffer());
+  const textoDeImagen = img[0].textAnnotations[0].description;
 
 
 // Lista de palabras a eliminar
@@ -89,10 +100,11 @@ let palabrasEscapadas = palabrasAEliminar.map(_.escapeRegExp);
 
 // Crear la expresión regular utilizando la función replace()
 let patron = new RegExp(palabrasEscapadas.join('|'), 'g');
-let textoLimpio = textoDeImagen.replace(patron, '').trim();
+const textoLimpio = textoDeImagen.replace(patron, '').trim();
 
 console.log(textoLimpio);
-consulta(textoLimpio)
+consulta(textoLimpio);
+
 
   
     
@@ -102,7 +114,7 @@ consulta(textoLimpio)
 
 
   async function consulta(pregunta) {
-    if (datos.identificacion == 802) {
+    if (datos.identificacion == 122) {
       try {
         const response = await openai.chat.completions.create({
           model: "gpt-4-1106-preview",
